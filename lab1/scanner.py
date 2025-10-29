@@ -59,6 +59,8 @@ class Scanner(Lexer):
     @_(r'"[^"]*"')
     def STRING(self, t):
         t.value = t.value[1:-1]
+        newlines = t.value.count('\n')
+        self.lineno += newlines
         return t
     
     ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
