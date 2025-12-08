@@ -1,6 +1,7 @@
 import sys
 from scanner import Scanner
 from parser import Mparser
+import TreePrinter
 
 
 if __name__ == '__main__':
@@ -14,4 +15,5 @@ if __name__ == '__main__':
     parser = Mparser()
 
     ast = parser.parse(lexer.tokenize(text))
-    ast.printTree()
+    if ast:
+        ast.printTree()
