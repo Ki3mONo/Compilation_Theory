@@ -8,6 +8,11 @@ def addToClass(cls):
     return decorator
 
 class TreePrinter:
+    indent_str = "|  "
+
+    @staticmethod
+    def printIndented(string, indent):
+        print(TreePrinter.indent_str * indent + string)
 
     @addToClass(AST.Node)
     def printTree(self, indent=0):
@@ -15,83 +20,83 @@ class TreePrinter:
 
     @addToClass(AST.IntNum)
     def printTree(self, indent=0):
-        print("|  " * indent + str(self.value))
+        TreePrinter.printIndented(str(self.value), indent)
 
     @addToClass(AST.FloatNum)
     def printTree(self, indent=0):
-        print("|  " * indent + str(self.value))
+        TreePrinter.printIndented(str(self.value), indent)
 
     @addToClass(AST.String)
     def printTree(self, indent=0):
-        print("|  " * indent + self.value)
+        TreePrinter.printIndented(self.value, indent)
 
     @addToClass(AST.Variable)
     def printTree(self, indent=0):
-        print("|  " * indent + self.name)
+        TreePrinter.printIndented(self.name, indent)
 
     @addToClass(AST.BinExpr)
     def printTree(self, indent=0):
-        print("|  " * indent + self.op)
+        TreePrinter.printIndented(self.op, indent)
         self.left.printTree(indent + 1)
         self.right.printTree(indent + 1)
 
     @addToClass(AST.RelExpr)
     def printTree(self, indent=0):
-        print("|  " * indent + self.op)
+        TreePrinter.printIndented(self.op, indent)
         self.left.printTree(indent + 1)
         self.right.printTree(indent + 1)
 
     @addToClass(AST.Assign)
     def printTree(self, indent=0):
-        print("|  " * indent + self.op)
+        TreePrinter.printIndented(self.op, indent)
         self.left.printTree(indent + 1)
         self.right.printTree(indent + 1)
 
     @addToClass(AST.UnaryExpr)
     def printTree(self, indent=0):
-        print("|  " * indent + self.op)
+        TreePrinter.printIndented(self.op, indent)
         self.expr.printTree(indent + 1)
 
     @addToClass(AST.If)
     def printTree(self, indent=0):
-        print("|  " * indent + "IF")
+        TreePrinter.printIndented("IF", indent)
         self.cond.printTree(indent + 1)
-        print("|  " * indent + "THEN")
+        TreePrinter.printIndented("THEN", indent)
         self.if_body.printTree(indent + 1)
         if self.else_body:
-            print("|  " * indent + "ELSE")
+            TreePrinter.printIndented("ELSE", indent)
             self.else_body.printTree(indent + 1)
 
     @addToClass(AST.While)
     def printTree(self, indent=0):
-        print("|  " * indent + "WHILE")
+        TreePrinter.printIndented("WHILE", indent)
         self.cond.printTree(indent + 1)
         self.body.printTree(indent + 1)
 
     @addToClass(AST.For)
     def printTree(self, indent=0):
-        print("|  " * indent + "FOR")
+        TreePrinter.printIndented("FOR", indent)
         self.id.printTree(indent + 1)
         self.range.printTree(indent + 1)
         self.body.printTree(indent + 1)
 
     @addToClass(AST.Break)
     def printTree(self, indent=0):
-        print("|  " * indent + "BREAK")
+        TreePrinter.printIndented("BREAK", indent)
 
     @addToClass(AST.Continue)
     def printTree(self, indent=0):
-        print("|  " * indent + "CONTINUE")
+        TreePrinter.printIndented("CONTINUE", indent)
 
     @addToClass(AST.Return)
     def printTree(self, indent=0):
-        print("|  " * indent + "RETURN")
+        TreePrinter.printIndented("RETURN", indent)
         if self.expr:
             self.expr.printTree(indent + 1)
 
     @addToClass(AST.Print)
     def printTree(self, indent=0):
-        print("|  " * indent + "PRINT")
+        TreePrinter.printIndented("PRINT", indent)
         for arg in self.args:
             arg.printTree(indent + 1)
 
@@ -102,31 +107,31 @@ class TreePrinter:
 
     @addToClass(AST.Vector)
     def printTree(self, indent=0):
-        print("|  " * indent + "VECTOR")
+        TreePrinter.printIndented("VECTOR", indent)
         for elem in self.elements:
             elem.printTree(indent + 1)
 
     @addToClass(AST.Ref)
     def printTree(self, indent=0):
-        print("|  " * indent + "REF")
-        print("|  " * (indent + 1) + self.name)
+        TreePrinter.printIndented("REF", indent)
+        TreePrinter.printIndented(self.name, indent + 1)
         for idx in self.indices:
             idx.printTree(indent + 1)
 
     @addToClass(AST.Function)
     def printTree(self, indent=0):
-        print("|  " * indent + self.name)
+        TreePrinter.printIndented(self.name, indent)
         self.args.printTree(indent + 1)
 
     @addToClass(AST.Range)
     def printTree(self, indent=0):
-        print("|  " * indent + "RANGE")
+        TreePrinter.printIndented("RANGE", indent)
         self.start.printTree(indent + 1)
         self.end.printTree(indent + 1)
 
     @addToClass(AST.Transpose)
     def printTree(self, indent=0):
-        print("|  " * indent + "TRANSPOSE")
+        TreePrinter.printIndented("TRANSPOSE", indent)
         self.expr.printTree(indent + 1)
 
     @addToClass(AST.Error)
