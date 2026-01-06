@@ -29,11 +29,11 @@ class Mparser(Parser):
 
     @_('statements')
     def program_body(self, p):
-        return AST.Compound(p.statements)
+        return AST.Compound(p.statements, lineno=p.lineno)
 
     @_('')
     def program_body(self, p):
-        return AST.Compound([])
+        return AST.Compound([], lineno=0)
 
     @_('stmt statements')
     def statements(self, p):
@@ -54,43 +54,43 @@ class Mparser(Parser):
 
     @_('"{" statements "}"')
     def block_stmt(self, p):
-        return AST.Compound(p.statements)
+        return AST.Compound(p.statements, lineno=p.lineno)
 
     @_('IF "(" cond ")" stmt %prec IFX')
     def if_stmt(self, p):
-        return AST.If(p.cond, p.stmt)
+        return AST.If(p.cond, p.stmt, lineno=p.lineno)
 
     @_('IF "(" cond ")" stmt ELSE stmt')
     def if_stmt(self, p):
-        return AST.If(p.cond, p.stmt0, p.stmt1)
+        return AST.If(p.cond, p.stmt0, p.stmt1, lineno=p.lineno)
 
     @_('WHILE "(" cond ")" stmt')
     def while_stmt(self, p):
-        return AST.While(p.cond, p.stmt)
+        return AST.While(p.cond, p.stmt, lineno=p.lineno)
 
     @_('FOR id_ref "=" range stmt')
     def for_stmt(self, p):
-        return AST.For(p.id_ref, p.range, p.stmt)
+        return AST.For(p.id_ref.name, p.range, p.stmt, lineno=p.lineno)
 
     @_('expr ":" expr')
     def range(self, p):
-        return AST.Range(p.expr0, p.expr1)
+        return AST.Range(p.expr0, p.expr1, lineno=p.lineno)
 
     @_('BREAK')
     def simple_stmt(self, p):
-        return AST.Break()
+        return AST.Break(lineno=p.lineno)
 
     @_('CONTINUE')
     def simple_stmt(self, p):
-        return AST.Continue()
+        return AST.Continue(lineno=p.lineno)
 
     @_('RETURN expr')
     def simple_stmt(self, p):
-        return AST.Return(p.expr)
+        return AST.Return(p.expr, lineno=p.lineno)
 
     @_('PRINT print_args')
     def simple_stmt(self, p):
-        return AST.Print(p.print_args)
+        return AST.Print(p.print_args, lineno=p.lineno)
 
     @_('print_args "," print_arg')
     def print_args(self, p):
@@ -102,7 +102,7 @@ class Mparser(Parser):
 
     @_('STRING')
     def print_arg(self, p):
-        return AST.String(p.STRING)
+        return AST.String(p.STRING, lineno=p.lineno)
 
     @_('expr')
     def print_arg(self, p):
@@ -112,7 +112,7 @@ class Mparser(Parser):
        'ref_matrix assign_op expr',
        'ref_vector assign_op expr')
     def assign_stmt(self, p):
-        return AST.Assign(p.assign_op, p[0], p.expr)
+        return AST.Assign(p.assign_op, p[0], p.expr, lineno=p.lineno)
 
     @_('MULASSIGN', 'DIVASSIGN', 'SUBASSIGN', 'ADDASSIGN', '"="')
     def assign_op(self, p):
@@ -127,7 +127,7 @@ class Mparser(Parser):
        'expr DOTMUL expr',
        'expr DOTDIV expr')
     def expr(self, p):
-        return AST.BinExpr(p[1], p.expr0, p.expr1)
+        return AST.BinExpr(p[1], p.expr0, p.expr1, lineno=p.lineno)
 
     @_('term',
        'matrix_init',
@@ -141,11 +141,11 @@ class Mparser(Parser):
 
     @_('"-" expr %prec UMINUS')
     def unary_neg(self, p):
-        return AST.UnaryExpr('-', p.expr)
+        return AST.UnaryExpr('-', p.expr, lineno=p.lineno)
 
     @_('expr "\'"')
     def transpose(self, p):
-        return AST.Transpose(p.expr)
+        return AST.Transpose(p.expr, lineno=p.lineno)
 
     @_('number', 'id_ref')
     def term(self, p):
@@ -158,11 +158,11 @@ class Mparser(Parser):
        'expr "<" expr',
        'expr ">" expr')
     def cond(self, p):
-        return AST.RelExpr(p[1], p.expr0, p.expr1)
+        return AST.RelExpr(p[1], p.expr0, p.expr1, lineno=p.lineno)
 
     @_('mat_func "(" INTNUM ")"')
     def mat_func_call(self, p):
-        return AST.Function(p.mat_func, AST.IntNum(int(p.INTNUM)))
+        return AST.Function(p.mat_func, [AST.IntNum(int(p.INTNUM), lineno=p.lineno)], lineno=p.lineno)
 
     @_('EYE', 'ONES', 'ZEROS')
     def mat_func(self, p):
@@ -170,7 +170,7 @@ class Mparser(Parser):
 
     @_('"[" mat_rows "]"')
     def matrix_init(self, p):
-        return AST.Vector(p.mat_rows)
+        return AST.Vector(p.mat_rows, lineno=p.lineno)
 
     @_('mat_rows "," mat_row')
     def mat_rows(self, p):
@@ -182,7 +182,7 @@ class Mparser(Parser):
 
     @_('"[" row_items "]"')
     def mat_row(self, p):
-        return AST.Vector(p.row_items)
+        return AST.Vector(p.row_items, lineno=p.lineno)
 
     @_('row_items "," row_item')
     def row_items(self, p):
@@ -202,23 +202,23 @@ class Mparser(Parser):
 
     @_('ID "[" INTNUM "]"')
     def ref_vector(self, p):
-        return AST.Ref(p.ID, [AST.IntNum(int(p.INTNUM))])
+        return AST.Ref(p.ID, [AST.IntNum(int(p.INTNUM), lineno=p.lineno)], lineno=p.lineno)
 
     @_('ID "[" INTNUM "," INTNUM "]"')
     def ref_matrix(self, p):
-        return AST.Ref(p.ID, [AST.IntNum(int(p.INTNUM0)), AST.IntNum(int(p.INTNUM1))])
+        return AST.Ref(p.ID, [AST.IntNum(int(p.INTNUM0), lineno=p.lineno), AST.IntNum(int(p.INTNUM1), lineno=p.lineno)], lineno=p.lineno)
 
     @_('ID')
     def id_ref(self, p):
-        return AST.Variable(p.ID)
+        return AST.Variable(p.ID, lineno=p.lineno)
 
     @_('INTNUM')
     def number(self, p):
-        return AST.IntNum(int(p.INTNUM))
+        return AST.IntNum(int(p.INTNUM), lineno=p.lineno)
 
     @_('FLOATNUM')
     def number(self, p):
-        return AST.FloatNum(float(p.FLOATNUM))
+        return AST.FloatNum(float(p.FLOATNUM), lineno=p.lineno)
 
     def error(self, p):
         if p:
