@@ -80,52 +80,33 @@ class Interpreter(object):
     def visit(self, node):
         value = node.right.accept(self)
         
+        assign_ops = {
+            '=': lambda old, new: new,
+            '+=': lambda old, new: old + new,
+            '-=': lambda old, new: old - new,
+            '*=': lambda old, new: old * new,
+            '/=': lambda old, new: old / new,
+        }
+        
         if isinstance(node.left, AST.Variable):
             # Simple variable assignment
             if node.op == '=':
-                self.memory_stack.set(node.left.name, value)
-            elif node.op == '+=':
+                new_value = value
+            else:
                 old_val = self.memory_stack.get(node.left.name)
-                self.memory_stack.set(node.left.name, old_val + value)
-            elif node.op == '-=':
-                old_val = self.memory_stack.get(node.left.name)
-                self.memory_stack.set(node.left.name, old_val - value)
-            elif node.op == '*=':
-                old_val = self.memory_stack.get(node.left.name)
-                self.memory_stack.set(node.left.name, old_val * value)
-            elif node.op == '/=':
-                old_val = self.memory_stack.get(node.left.name)
-                self.memory_stack.set(node.left.name, old_val / value)
+                new_value = assign_ops[node.op](old_val, value)
+            self.memory_stack.set(node.left.name, new_value)
+            
         elif isinstance(node.left, AST.Ref):
             # Matrix/vector element assignment
             var = self.memory_stack.get(node.left.name)
-            indices = [idx.accept(self) for idx in node.left.indices]
+            indices = tuple(idx.accept(self) for idx in node.left.indices)
             
             if node.op == '=':
-                if len(indices) == 1:
-                    var[indices[0]] = value
-                elif len(indices) == 2:
-                    var[indices[0], indices[1]] = value
-            elif node.op == '+=':
-                if len(indices) == 1:
-                    var[indices[0]] += value
-                elif len(indices) == 2:
-                    var[indices[0], indices[1]] += value
-            elif node.op == '-=':
-                if len(indices) == 1:
-                    var[indices[0]] -= value
-                elif len(indices) == 2:
-                    var[indices[0], indices[1]] -= value
-            elif node.op == '*=':
-                if len(indices) == 1:
-                    var[indices[0]] *= value
-                elif len(indices) == 2:
-                    var[indices[0], indices[1]] *= value
-            elif node.op == '/=':
-                if len(indices) == 1:
-                    var[indices[0]] /= value
-                elif len(indices) == 2:
-                    var[indices[0], indices[1]] /= value
+                var[indices] = value
+            else:
+                old_val = var[indices]
+                var[indices] = assign_ops[node.op](old_val, value)
 
     @when(AST.If)
     def visit(self, node):
