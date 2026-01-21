@@ -81,7 +81,6 @@ class Interpreter(object):
         value = node.right.accept(self)
         
         assign_ops = {
-            '=': lambda old, new: new,
             '+=': lambda old, new: old + new,
             '-=': lambda old, new: old - new,
             '*=': lambda old, new: old * new,
